@@ -1,0 +1,18 @@
+data_generation_configuration:
+  persona:
+    name: "John Doe"
+    age: 30
+    gender: "male"
+    occupation: "Software Engineer"
+
+  rating_distribution: [0.1, 0.2, 0.3, 0.4, 0.5]
+  min_generated_samples : 300
+  review_characteristics:
+    - "The review is very positive."
+
+
+model_configuration:
+  model_name: "gpt-4o"
+  temperature: 0.8
+  top_p: 0.9
+  base_url: "https://api.together.xyz/v1"
