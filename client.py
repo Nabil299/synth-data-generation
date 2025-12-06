@@ -2,6 +2,13 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 from utils import CONFIG
+from pydantic import BaseModel
+
+
+class ReviewFormat (BaseModel):
+    rating: int
+    review_text: str
+
 
 class OpenAIClient:
     def __init__(self):
@@ -13,7 +20,7 @@ class OpenAIClient:
         self.api_key = os.getenv('API_KEY')
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
 
-    def generate(self, system_prompt: str, user_prompt: str,top_p: float = 0.9, temperature: float = 0.8) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, top_p: float = 0.9, temperature: float = 0.7) -> str:
         """
         Generate a response using OpenAI API
 
@@ -33,7 +40,13 @@ class OpenAIClient:
                 ],
                 temperature=temperature,
                 top_p=top_p,
-                response_format={"type": "json_object"}
+                # response_format={
+                #     "type": "json_schema",
+                #     "json_schema": {
+                #         "name": "review_format",  # A descriptive name for your schema
+                #         "schema": ReviewFormat.model_json_schema()
+                #     },
+                # }
             )
 
             return response.choices[0].message.content

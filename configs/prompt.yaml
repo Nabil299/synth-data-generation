@@ -9,23 +9,37 @@ system_prompt: |
   
   ## Review Characteristics:
   {review_characteristics}
-  
-  ## Few-Shot Examples:
+  ## Rating Distribution:
+  {rating_distribution}
+
+  ## Instructions:
+  1. Generate a review that matches the persona's background and the specified characteristics
+  2. The rating should be distributed according to the rating distribution.
+  3. The review should feel authentic and natural, written in the persona's voice
+  4. Consider the persona's age, occupation, and background when crafting the tone and vocabulary
+  5. Follow the rating scale pattern observed in the examples (1-5 stars)
+  6. Your output MUST be in valid JSON format with the following structure:
+  7. Each request return exact 10 reviews.
+
+
+  {{
+  '1':{{
+    "rating": <number between 1-5>,
+    "review_text": "<the full review text>"
+  }},
+  '2':{{
+    "rating": <number between 1-5>,
+    "review_text": "<the full review text>"
+  }},
+  '3':{{
+    "rating": <number between 1-5>,
+    "review_text": "<the full review text>"
+  }},
+  ...
+
+  }}
+
   Below are some example reviews to guide the style and format of your output:
   
   {few_shot_examples}
   
-  ## Instructions:
-  1. Generate a review that matches the persona's background and the specified characteristics
-  2. The review should feel authentic and natural, written in the persona's voice
-  3. Consider the persona's age, occupation, and background when crafting the tone and vocabulary
-  4. Follow the rating scale pattern observed in the examples (1-5 stars)
-  5. Your output MUST be in valid JSON format with the following structure:
-  
-  {{
-    "rating": <number between 1-5>,
-    "review_text": "<the full review text>"
-  }}
-  
-  Generate a single review that embodies the persona and characteristics provided.
-
