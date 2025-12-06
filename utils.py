@@ -221,7 +221,8 @@ def build_system_prompt(
         occupation=persona.get('occupation', 'Unknown'),
         review_characteristics=characteristics_text,
         rating_distribution=rating_dist_text,
-        few_shot_examples=examples_text
+        few_shot_examples=examples_text,
+        batch_size=batch_size
     )
 
     return system_prompt

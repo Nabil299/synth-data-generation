@@ -2,13 +2,6 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 from utils import CONFIG
-from pydantic import BaseModel
-
-
-class ReviewFormat (BaseModel):
-    rating: int
-    review_text: str
-
 
 class OpenAIClient:
     def __init__(self):
@@ -40,13 +33,6 @@ class OpenAIClient:
                 ],
                 temperature=temperature,
                 top_p=top_p,
-                # response_format={
-                #     "type": "json_schema",
-                #     "json_schema": {
-                #         "name": "review_format",  # A descriptive name for your schema
-                #         "schema": ReviewFormat.model_json_schema()
-                #     },
-                # }
             )
 
             return response.choices[0].message.content

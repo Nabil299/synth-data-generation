@@ -1,5 +1,6 @@
 from utils import CONFIG, build_system_prompt, load_few_shot_examples
 from client import openai_client
+from models import  parse_review_batch
 
 
 def configure_prompt(num_examples: int = 5, batch_size: int = 10):
@@ -36,7 +37,7 @@ def configure_prompt(num_examples: int = 5, batch_size: int = 10):
     return system_prompt
 
 
-def generate_review(user_prompt: str, num_examples: int = 5, batch_size: int = 10):
+def generate_review(user_prompt: str, num_examples: int = 5, batch_size: int = 10) -> str:
     """
     Generate a batch of reviews using the OpenAI client
 
@@ -46,15 +47,16 @@ def generate_review(user_prompt: str, num_examples: int = 5, batch_size: int = 1
         batch_size: Number of reviews to generate in this batch
 
     Returns:
-        Generated reviews from the model
+        Generated reviews from the model (JSON string)
     """
     system_prompt = configure_prompt(
         num_examples=num_examples, batch_size=batch_size)
+
     response = openai_client.generate(
         system_prompt=system_prompt,
-        user_prompt=user_prompt,
+        user_prompt=user_prompt
     )
-    print(response)
+
     return response
 
 
@@ -74,7 +76,7 @@ def generate_all_reviews(user_prompt: str, num_examples: int = 5):
     batch_size = 10  # Fixed batch size as specified
 
     num_batches = (min_generated_samples + batch_size -
-                   1) // batch_size  # Ceiling division
+                   1) // batch_size
 
     print(
         f"Generating {min_generated_samples} reviews in {num_batches} batches of {batch_size}...")
@@ -116,6 +118,31 @@ def generate_all_reviews(user_prompt: str, num_examples: int = 5):
 
 if __name__ == "__main__":
     # Example usage
-    user_input = "Generate a review for an Amazon product"
-    result = generate_review(user_input)
+    user_input = "Generate reviews for Amazon products"
+    result = generate_review(user_input, batch_size=10)
+    print("\nRaw JSON response:")
     print(result)
+
+    # Parse and validate using Pydantic
+    try:
+        batch = parse_review_batch(result)
+        print(
+            f"\n✓ Successfully generated and validated {len(batch.reviews)} reviews")
+        print(f"Review IDs: {list(batch.reviews.keys())}")
+
+        # Verify rating distribution
+        from collections import Counter
+        ratings = [batch.reviews[key].rating for key in batch.reviews]
+        rating_counts = dict(Counter(ratings))
+        print(f"Rating distribution: {rating_counts}")
+
+        # Show first review as example
+        first_review = batch.reviews['1']
+        print(f"\nFirst review:")
+        print(f"  Rating: {first_review.rating} stars")
+        print(f"  Text: {first_review.review_text[:100]}...")
+
+    except Exception as e:
+        print(f"\n✗ Validation error: {e}")
+        import traceback
+        traceback.print_exc()

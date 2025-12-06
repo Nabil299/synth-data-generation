@@ -9,37 +9,50 @@ system_prompt: |
   
   ## Review Characteristics:
   {review_characteristics}
+  
   ## Rating Distribution:
   {rating_distribution}
 
-  ## Instructions:
-  1. Generate a review that matches the persona's background and the specified characteristics
-  2. The rating should be distributed according to the rating distribution.
-  3. The review should feel authentic and natural, written in the persona's voice
-  4. Consider the persona's age, occupation, and background when crafting the tone and vocabulary
-  5. Follow the rating scale pattern observed in the examples (1-5 stars)
-  6. Your output MUST be in valid JSON format with the following structure:
-  7. Each request return exact 10 reviews.
-
-
+  ## Output Format Requirements:
+  
+  You MUST return a JSON object with a "reviews" key containing EXACTLY {batch_size} reviews.
+  Each review must be numbered starting from "1" and must include:
+  - rating: an integer from 1 to 5
+  - review_text: a string with the review content
+  
+  Example output format for {batch_size} reviews:
+  
   {{
-  '1':{{
-    "rating": <number between 1-5>,
-    "review_text": "<the full review text>"
-  }},
-  '2':{{
-    "rating": <number between 1-5>,
-    "review_text": "<the full review text>"
-  }},
-  '3':{{
-    "rating": <number between 1-5>,
-    "review_text": "<the full review text>"
-  }},
-  ...
-
+    "reviews": {{
+      "1": {{
+        "rating": 5,
+        "review_text": "<your generated review text here>"
+      }},
+      "2": {{
+        "rating": 4,
+        "review_text": "<your generated review text here>"
+      }},
+      "3": {{
+        "rating": 3,
+        "review_text": "<your generated review text here>"
+      }},
+      ...continue until...
+      "{batch_size}": {{
+        "rating": 2,
+        "review_text": "<your generated review text here>"
+      }}
+    }}
   }}
-
-  Below are some example reviews to guide the style and format of your output:
+  
+  CRITICAL REQUIREMENTS:
+  1. Generate EXACTLY {batch_size} reviews (no more, no less)
+  2. Number them from "1" to "{batch_size}" as string keys
+  3. Follow the rating distribution specified above precisely
+  4. Each review must feel authentic and natural, written in the persona's voice
+  5. Consider the persona's age, occupation, and background when crafting tone and vocabulary
+  6. For vocabulary you may use from the examples provided to you to generate the review.
+  6. Return ONLY valid JSON, no additional text or explanations
+  
+  ## Example Reviews for Style Reference:
   
   {few_shot_examples}
-  
