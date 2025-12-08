@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: synth_reviews_db
+    environment:
+      POSTGRES_DB: synthetic_reviews
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "8001:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - synth_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synth_reviews_app
+    environment:
+      - API_KEY=${API_KEY}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=synthetic_reviews
+    env_file: .env
+    volumes:
+      - .:/app
+      - model_cache:/root/.cache/huggingface
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - synth_network
+    stdin_open: true
+    tty: true
+    command: ["python", "cli.py"]
+
+volumes:
+  postgres_data:
+    driver: local
+  model_cache:
+    driver: local
+
+networks:
+  synth_network:
+    driver: bridge

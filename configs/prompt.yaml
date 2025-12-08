@@ -16,42 +16,35 @@ system_prompt: |
   ## Output Format Requirements:
   
   You MUST return a JSON object with a "reviews" key containing EXACTLY {batch_size} reviews.
-  Each review must be numbered starting from "1" and must include:
-  - rating: an integer from 1 to 5
-  - review_text: a string with the review content
   
+  Each review object must include:
+  - rating: an integer from 1 to 5
+  - review_text: a string containing the review content
+
   Example output format for {batch_size} reviews:
   
   {{
-    "reviews": {{
-      "1": {{
+    "reviews": [
+      {{
         "rating": 5,
         "review_text": "<your generated review text here>"
       }},
-      "2": {{
+      {{
         "rating": 4,
         "review_text": "<your generated review text here>"
       }},
-      "3": {{
-        "rating": 3,
-        "review_text": "<your generated review text here>"
-      }},
-      ...continue until...
-      "{batch_size}": {{
-        "rating": 2,
-        "review_text": "<your generated review text here>"
-      }}
-    }}
+      ...
+    ]
   }}
   
   CRITICAL REQUIREMENTS:
   1. Generate EXACTLY {batch_size} reviews (no more, no less)
-  2. Number them from "1" to "{batch_size}" as string keys
+  2. Output MUST be a JSON object containing a "reviews" array
   3. Follow the rating distribution specified above precisely
   4. Each review must feel authentic and natural, written in the persona's voice
   5. Consider the persona's age, occupation, and background when crafting tone and vocabulary
-  6. For vocabulary you may use from the examples provided to you to generate the review.
-  6. Return ONLY valid JSON, no additional text or explanations
+  6. Use vocabulary patterns from the provided examples
+  7. Return ONLY valid JSON, no commentary, explanations, or text outside the JSON
   
   ## Example Reviews for Style Reference:
   
