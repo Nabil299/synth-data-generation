@@ -94,18 +94,23 @@ def calculate_rating_counts(rating_distribution: Union[List[float], str], total_
     return counts
 
 
-def format_rating_distribution(rating_distribution: Union[List[float], str], batch_size: int = 10) -> str:
+def format_rating_distribution(rating_distribution: Union[List[float], str, Dict[int, int]], batch_size: int = 10) -> str:
     """
     Format rating distribution instructions for the prompt
 
     Args:
-        rating_distribution: Either a list of probabilities or a distribution name
-        batch_size: Number of reviews to generate in this batch
+        rating_distribution: Either a list of probabilities, a distribution name, or a dict {rating: count}
+        batch_size: Number of reviews to generate in this batch (ignored if dict is provided)
 
     Returns:
         Formatted string describing the rating distribution
     """
-    counts = calculate_rating_counts(rating_distribution, batch_size)
+    # If rating_distribution is already a dict {rating: count}, use it directly
+    if isinstance(rating_distribution, dict):
+        counts = rating_distribution
+        batch_size = sum(counts.values())
+    else:
+        counts = calculate_rating_counts(rating_distribution, batch_size)
 
     formatted_parts = []
     formatted_parts.append(
@@ -125,7 +130,7 @@ def format_rating_distribution(rating_distribution: Union[List[float], str], bat
     return "\n".join(formatted_parts)
 
 
-def load_few_shot_examples(csv_path: str, num_examples: int = 5) -> List[Dict]:
+def load_few_shot_examples(csv_path: str, num_examples: int = 5, rating_column: str = 'Rating', review_column: str = 'Review Text') -> List[Dict]:
     """
     Load random rows from the review dataset for few-shot examples
 
@@ -137,9 +142,9 @@ def load_few_shot_examples(csv_path: str, num_examples: int = 5) -> List[Dict]:
         List of dictionaries containing review examples
     """
     df = pd.read_csv(csv_path, engine="python")
-    df['Rating'] = df['Rating'].apply(normalize_rating)
-    df = df[df['Rating'] != -1]
-    grouped = df.groupby('Rating', group_keys=False)
+    df[rating_column] = df[rating_column].apply(normalize_rating)
+    df = df[df[rating_column] != -1]
+    grouped = df.groupby(rating_column, group_keys=False)
     sampled = grouped.apply(lambda x: x.sample(1)) if len(
         grouped) > 1 else df.sample(n=min(num_examples, len(df)))
     sample_df = sampled.sample(n=min(num_examples, len(sampled)))
@@ -147,11 +152,11 @@ def load_few_shot_examples(csv_path: str, num_examples: int = 5) -> List[Dict]:
     examples = []
     for _, row in sample_df.iterrows():
         # Extract rating number from "Rated X out of 5 stars" format
-        rating = row['Rating']
+        rating = row[rating_column]
 
         examples.append({
             'rating': rating,
-            'review_text': row['Review Text']
+            'review_text': row[review_column]
         })
 
     return examples
@@ -180,7 +185,7 @@ Review: {example['review_text']}
 def build_system_prompt(
     persona: Dict[str, any],
     review_characteristics: List[str],
-    rating_distribution: Union[List[float], str],
+    rating_distribution: Union[List[float], str, Dict[int, int]],
     few_shot_examples: List[Dict],
     batch_size: int = 10,
     prompt_template: str = None
@@ -191,7 +196,7 @@ def build_system_prompt(
     Args:
         persona: Dictionary containing persona information (name, age, gender, occupation)
         review_characteristics: List of characteristics describing the desired review
-        rating_distribution: Either list of probabilities or distribution name
+        rating_distribution: Either list of probabilities, distribution name, or dict {rating: count}
         few_shot_examples: List of example reviews
         batch_size: Number of reviews to generate in this batch
         prompt_template: Optional custom prompt template (loads from file if not provided)

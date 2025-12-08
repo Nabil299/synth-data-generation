@@ -7,12 +7,52 @@ data_generation_configuration:
 
   rating_distribution: [0.1, 0.2, 0.3, 0.3, 0.1]
   min_generated_samples : 300
+  batch_size: 10
+  num_few_shot_examples: 5
+  user_prompt: "Generate reviews for Amazon products"
   review_characteristics:
-    - "The review is very positive."
+    - "Generate reviews with varied sentiment that naturally matches each rating level"
+    - "1-2 star reviews should be critical and negative"
+    - "3 star reviews should be neutral or mixed"
+    - "4-5 star reviews should be positive and satisfied"
+  max_retry_rounds: 3
+  retry_batch_size: 10
+  use_schema: false
+  
+csv_configuration:
+  csv_path: "./dataset/Amazon_Reviews.csv"
+  rating_column: "Rating"
+  review_column: "Review Text"
+# Quality Guardrails Configuration
+quality_guardrails:
+  # Semantic similarity
+  embedding_model: "all-MiniLM-L6-v2"  
+  enable_duplicate_check: true
+  similarity_threshold: 0.80
+  min_reviews_before_check: 30
+  # Sentiment-rating validation
+  enable_sentiment_check: true
+  sentiment_thresholds:
+    rating_1:  # 1-star reviews should be very negative
+      min: 0.0
+      max: 0.3
+    rating_2:  # 2-star reviews should be negative
+      min: 0.0
+      max: 0.4
+    rating_3:  # 3-star reviews can be neutral
+      min: 0.0
+      max: 1.0
+    rating_4:  # 4-star reviews should be positive
+      min: 0.6
+      max: 1.0
+    rating_5:  # 5-star reviews should be very positive
+      min: 0.7
+      max: 1.0
 
 
 model_configuration:
-  model_name: "meta-llama/Llama-3.2-3B-Instruct-Turbo"
+
+  model_name: ["openai/gpt-oss-20b"]
   temperature: 0.8
   top_p: 0.9
   base_url: "https://api.together.xyz/v1"
