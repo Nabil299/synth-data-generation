@@ -17,14 +17,18 @@ data_generation_configuration:
     - "4-5 star reviews should be positive and satisfied"
   max_retry_rounds: 3
   retry_batch_size: 10
-
-
+  use_schema: false
+  
+csv_configuration:
+  csv_path: "./dataset/Amazon_Reviews.csv"
+  rating_column: "Rating"
+  review_column: "Review Text"
 # Quality Guardrails Configuration
 quality_guardrails:
   # Semantic similarity
   embedding_model: "all-MiniLM-L6-v2"  
   enable_duplicate_check: true
-  similarity_threshold: 0.85
+  similarity_threshold: 0.80
   min_reviews_before_check: 30
   # Sentiment-rating validation
   enable_sentiment_check: true
@@ -36,8 +40,8 @@ quality_guardrails:
       min: 0.0
       max: 0.4
     rating_3:  # 3-star reviews can be neutral
-      min: 0.3
-      max: 0.7
+      min: 0.0
+      max: 1.0
     rating_4:  # 4-star reviews should be positive
       min: 0.6
       max: 1.0
@@ -48,7 +52,7 @@ quality_guardrails:
 
 model_configuration:
 
-  model_name: ["mistralai/Mistral-7B-Instruct-v0.3", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"]
+  model_name: ["openai/gpt-oss-20b"]
   temperature: 0.8
   top_p: 0.9
   base_url: "https://api.together.xyz/v1"

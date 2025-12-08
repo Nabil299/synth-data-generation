@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-08T11:44:38.141701",
+    "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+    "num_synthetic_reviews": 300,
+    "num_real_reviews": 50,
+    "synthetic_rating_distribution": {
+      "1": 29,
+      "2": 39,
+      "3": 93,
+      "4": 75,
+      "5": 64
+    },
+    "total_time_seconds": 530.8220617771149,
+    "total_time_formatted": "8m 50s"
+  },
+  "metrics": {
+    "semantic_diversity": {
+      "diversity_score": 0.6717019081115723,
+      "avg_similarity": 0.32829809188842773,
+      "min_similarity": -0.11690283566713333,
+      "max_similarity": 0.9485332369804382,
+      "std_similarity": 0.1609085649251938,
+      "interpretation": "EXCELLENT DIVERSITY"
+    },
+    "real_vs_synthetic": {
+      "avg_similarity": 0.3996036648750305,
+      "realism_score": 0.6003963351249695,
+      "min_similarity": 0.10069607943296432,
+      "max_similarity": 0.7293961644172668,
+      "std_similarity": 0.12582558393478394,
+      "interpretation": "BALANCED - Good mix of realism and diversity"
+    },
+    "sentiment_rating_alignment": {
+      "correlation": 0.877348631653103,
+      "p_value": 4.911852339828969e-97,
+      "rating_sentiment_stats": {
+        "1": {
+          "mean": 0.014098469553322628,
+          "std": 0.01204608322130037,
+          "min": 0.007748425006866455,
+          "max": 0.07480204105377197,
+          "count": 29
+        },
+        "2": {
+          "mean": 0.04943934694314615,
+          "std": 0.05130554985854191,
+          "min": 0.009520232677459717,
+          "max": 0.22913914918899536,
+          "count": 39
+        },
+        "3": {
+          "mean": 0.5955039197078316,
+          "std": 0.26456971442410265,
+          "min": 0.0907202959060669,
+          "max": 0.9707589447498322,
+          "count": 93
+        },
+        "4": {
+          "mean": 0.9280737634499868,
+          "std": 0.07876520056019098,
+          "min": 0.693792998790741,
+          "max": 0.9940008223056793,
+          "count": 75
+        },
+        "5": {
+          "mean": 0.9949199738912284,
+          "std": 0.0016949998916321442,
+          "min": 0.9864635765552521,
+          "max": 0.9966056942939758,
+          "count": 64
+        }
+      },
+      "interpretation": "EXCELLENT ALIGNMENT"
+    }
+  }
+}

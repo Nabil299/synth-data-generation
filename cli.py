@@ -6,7 +6,8 @@ from typing import Optional, Dict
 from db.db_config import initialize_database
 from guardrails import QualityGuardrails
 from collections import defaultdict
-
+from metrics import calculate_all_metrics, save_results, export_reviews_to_folder
+import time
 
 def configure_prompt(num_examples: int = 5, batch_size: int = 10, custom_rating_dist: Dict[int, int] = None):
     """
@@ -25,7 +26,10 @@ def configure_prompt(num_examples: int = 5, batch_size: int = 10, custom_rating_
     persona = data_generation_configuration['persona']
     review_characteristics = data_generation_configuration['review_characteristics']
     rating_distribution = data_generation_configuration['rating_distribution']
-
+    csv_configuration = CONFIG['csv_configuration']
+    csv_path = csv_configuration['csv_path']
+    rating_column = csv_configuration['rating_column']
+    review_column = csv_configuration['review_column']
     # Use custom distribution if provided, otherwise use default
     if custom_rating_dist is not None:
         # Convert custom distribution dict to list format for the prompt
@@ -33,10 +37,10 @@ def configure_prompt(num_examples: int = 5, batch_size: int = 10, custom_rating_
 
     # Load few-shot examples from the dataset
     few_shot_examples = load_few_shot_examples(
-        csv_path='./dataset/Amazon_Reviews.csv',
+        csv_path=csv_path,
         num_examples=num_examples,
-        rating_column='Rating',
-        review_column='Review Text'
+        rating_column=rating_column,
+        review_column=review_column
     )
 
     # Build the complete system prompt
@@ -51,7 +55,7 @@ def configure_prompt(num_examples: int = 5, batch_size: int = 10, custom_rating_
     return system_prompt
 
 
-def generate_review(user_prompt: str, model_name: str, num_examples: int = 5, batch_size: int = 10, custom_rating_dist: Dict[int, int] = None) -> str:
+def generate_review(user_prompt: str, model_name: str, num_examples: int = 5, batch_size: int = 10, custom_rating_dist: Dict[int, int] = None,use_schema:bool = True) -> str:
     """
     Generate a batch of reviews using the OpenAI client
 
@@ -75,7 +79,7 @@ def generate_review(user_prompt: str, model_name: str, num_examples: int = 5, ba
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         model_name=model_name,
-        response_schema=ReviewBatch.model_json_schema()
+        response_schema=ReviewBatch.model_json_schema() if use_schema else None
     )
 
     return response
@@ -88,7 +92,8 @@ def _generate_and_validate_batch(
     guardrails: QualityGuardrails,
     db: ReviewDatabase,
     model_name: str,
-    custom_rating_dist: Dict[int, int] = None
+    custom_rating_dist: Dict[int, int] = None,
+    use_schema: bool = True
 ):
     """
     Generate a single batch of reviews and validate them
@@ -101,7 +106,7 @@ def _generate_and_validate_batch(
         db: Database instance for insertion
         model_name: Name of the model generating reviews
         custom_rating_dist: Optional custom rating distribution as dict {rating: count}
-
+        use_schema: Whether to use the schema for validation
     Returns:
         Tuple of (reviews_list, accepted, rejected, batch_stats, num_inserted)
     """
@@ -110,7 +115,8 @@ def _generate_and_validate_batch(
         model_name=model_name,
         num_examples=num_examples,
         batch_size=batch_size,
-        custom_rating_dist=custom_rating_dist
+        custom_rating_dist=custom_rating_dist,
+        use_schema=use_schema
     )
 
     # Parse the JSON response
@@ -144,7 +150,8 @@ def _run_initial_generation(
     db: ReviewDatabase,
     guardrails: QualityGuardrails,
     rating_distribution,
-    model_name: str
+    model_name: str,
+    use_schema: bool = True
 ):
     """
     Run the initial batch generation phase
@@ -157,7 +164,7 @@ def _run_initial_generation(
         db: Database instance
         guardrails: QualityGuardrails instance
         rating_distribution: The configured rating distribution
-
+        use_schema: Whether to use the schema for validation
     Returns:
         Tuple of (all_reviews, total_stats, rejected_by_rating)
     """
@@ -198,7 +205,8 @@ def _run_initial_generation(
                 guardrails=guardrails,
                 db=db,
                 model_name=model_name,
-                custom_rating_dist=expected_dist
+                custom_rating_dist=expected_dist,
+                use_schema=use_schema
             )
 
             all_reviews.append(reviews_list)
@@ -268,7 +276,8 @@ def _run_single_retry_batch(
     batch_num: int,
     num_batches: int,
     model_name: str,
-    custom_rating_dist: Dict[int, int] = None
+    custom_rating_dist: Dict[int, int] = None,
+    use_schema: bool = True
 ):
     """
     Generate and validate a single retry batch
@@ -276,7 +285,7 @@ def _run_single_retry_batch(
     Args:
         custom_rating_dist: Optional custom rating distribution to match rejected reviews
         model_name: Name of the model generating reviews
-
+        use_schema: Whether to use the schema for validation
     Returns:
         Tuple of (batch_stats, rejected_reviews, success)
     """
@@ -294,7 +303,8 @@ def _run_single_retry_batch(
             guardrails=guardrails,
             db=db,
             model_name=model_name,
-            custom_rating_dist=custom_rating_dist
+            custom_rating_dist=custom_rating_dist,
+            use_schema=use_schema
         )
 
         print(f"  ✓ Generated {len(reviews_list)} retry reviews")
@@ -320,7 +330,8 @@ def _run_retry_mechanism(
     db: ReviewDatabase,
     guardrails: QualityGuardrails,
     rejected_by_rating: Dict[int, int],
-    model_name: str
+    model_name: str,
+    use_schema: bool = True
 ):
     """
     Run the retry mechanism to replace rejected reviews with rating-aware generation
@@ -334,7 +345,7 @@ def _run_retry_mechanism(
         db: Database instance
         guardrails: QualityGuardrails instance
         rejected_by_rating: Dict mapping rating to count of rejected reviews
-
+        use_schema: Whether to use the schema for validation
     Returns:
         dict: Retry statistics
     """
@@ -361,7 +372,7 @@ def _run_retry_mechanism(
 
     for retry_round in range(max_retry_rounds):
         # Calculate how many samples we still need overall
-        current_unique = db.get_review_count()
+        current_unique = db.get_review_count(model_name=model_name)
         still_needed = min_generated_samples - current_unique
 
         if still_needed <= 0:
@@ -394,7 +405,7 @@ def _run_retry_mechanism(
 
         for retry_batch_num in range(num_retry_batches):
             # Check if we already have enough
-            current_unique = db.get_review_count()
+            current_unique = db.get_review_count(model_name=model_name)
             if current_unique >= min_generated_samples:
                 print(f"✓ Target reached during retry!")
                 break
@@ -424,7 +435,8 @@ def _run_retry_mechanism(
                 batch_num=retry_batch_num,
                 num_batches=num_retry_batches,
                 model_name=model_name,
-                custom_rating_dist=custom_rating_dist
+                custom_rating_dist=custom_rating_dist,
+                use_schema=use_schema
             )
 
             if success and batch_stats:
@@ -549,7 +561,7 @@ def generate_all_reviews(user_prompt: str, model_name: str):
     max_retry_rounds = data_generation_config.get('max_retry_rounds', 3)
     retry_batch_size = data_generation_config.get('retry_batch_size', 10)
     rating_distribution = data_generation_config['rating_distribution']
-
+    use_schema = data_generation_config.get('use_schema', True)
     # Initialize database and quality guardrails (with model_name filtering for duplicates)
     db = initialize_database()
     guardrails = QualityGuardrails(db=db, config=CONFIG, model_name=model_name)
@@ -565,7 +577,8 @@ def generate_all_reviews(user_prompt: str, model_name: str):
         db=db,
         guardrails=guardrails,
         rating_distribution=rating_distribution,
-        model_name=model_name
+        model_name=model_name,
+        use_schema=use_schema
     )
 
     # Print initial statistics
@@ -581,7 +594,8 @@ def generate_all_reviews(user_prompt: str, model_name: str):
         db=db,
         guardrails=guardrails,
         rejected_by_rating=rejected_by_rating,
-        model_name=model_name
+        model_name=model_name,
+        use_schema=use_schema
     )
 
     # Print final statistics
@@ -592,8 +606,7 @@ def generate_all_reviews(user_prompt: str, model_name: str):
 
 
 if __name__ == "__main__":
-    from metrics import calculate_all_metrics, save_results, export_reviews_to_folder
-    import time
+
 
     # Get configuration
     data_generation_config = CONFIG['data_generation_configuration']
@@ -637,7 +650,7 @@ if __name__ == "__main__":
         print(f"{'='*70}")
 
         try:
-            metrics_results = calculate_all_metrics(model_name=model_name)
+            metrics_results = calculate_all_metrics(model_name=model_name,total_time=generation_time)
             output_dir, json_path, md_path = save_results(
                 metrics_results, model_name)
             reviews_csv = export_reviews_to_folder(

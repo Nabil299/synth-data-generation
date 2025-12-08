@@ -193,16 +193,16 @@ class RealVsSyntheticMetric:
 
     def interpret_score(self, avg_similarity: float) -> str:
         """Interpret the real-vs-synthetic similarity"""
-        if avg_similarity < 0.2:
-            return "VERY UNREALISTIC"
-        elif avg_similarity < 0.4:
-            return "UNREALISTIC"
-        elif avg_similarity < 0.6:
-            return "BALANCED"
-        elif avg_similarity < 0.8:
-            return "VERY REALISTIC"
+        if avg_similarity < 0.15:
+            return "VERY UNREALISTIC - Too different from real reviews"
+        elif avg_similarity < 0.35:
+            return "SOMEWHAT UNREALISTIC - Limited resemblance"  
+        elif avg_similarity < 0.65:
+            return "BALANCED - Good mix of realism and diversity"
+        elif avg_similarity < 0.85:
+            return "VERY REALISTIC - Strong resemblance"
         else:
-            return "TOO SIMILAR"
+            return "TOO SIMILAR - Possible overfitting/copying"
 
 
 class SentimentRatingAlignmentMetric:
@@ -379,7 +379,7 @@ def load_real_reviews(csv_path='./dataset/Amazon_Reviews.csv', num_samples=50):
     return result
 
 
-def calculate_all_metrics(model_name: str = None):
+def calculate_all_metrics(model_name: str = None,total_time: float = 0):
     """
     Calculate all quality metrics and save results
 
@@ -389,7 +389,6 @@ def calculate_all_metrics(model_name: str = None):
     Returns:
         Dictionary with all metrics and timing information
     """
-    start_time = time.time()
     print("=" * 70)
     print("SYNTHETIC REVIEW QUALITY METRICS")
     if model_name:
@@ -498,9 +497,6 @@ def calculate_all_metrics(model_name: str = None):
         sentiment_results['correlation']
     )
 
-    # Calculate total time
-    end_time = time.time()
-    total_time = end_time - start_time
     results['metadata']['total_time_seconds'] = float(total_time)
     results['metadata']['total_time_formatted'] = f"{int(total_time // 60)}m {int(total_time % 60)}s"
 

@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-08T13:03:51.196865",
+    "model_name": "openai/gpt-oss-20b",
+    "num_synthetic_reviews": 300,
+    "num_real_reviews": 50,
+    "synthetic_rating_distribution": {
+      "1": 30,
+      "2": 60,
+      "3": 90,
+      "4": 90,
+      "5": 30
+    },
+    "total_time_seconds": 3534.4630732536316,
+    "total_time_formatted": "58m 54s"
+  },
+  "metrics": {
+    "semantic_diversity": {
+      "diversity_score": 0.6987187266349792,
+      "avg_similarity": 0.30128127336502075,
+      "min_similarity": -0.09269021451473236,
+      "max_similarity": 0.9416826367378235,
+      "std_similarity": 0.1445160061120987,
+      "interpretation": "EXCELLENT DIVERSITY"
+    },
+    "real_vs_synthetic": {
+      "avg_similarity": 0.29138830304145813,
+      "realism_score": 0.7086117267608643,
+      "min_similarity": 0.11478835344314575,
+      "max_similarity": 0.5611916184425354,
+      "std_similarity": 0.07911557704210281,
+      "interpretation": "SOMEWHAT UNREALISTIC - Limited resemblance"
+    },
+    "sentiment_rating_alignment": {
+      "correlation": 0.8941585017752218,
+      "p_value": 5.265783496396019e-106,
+      "rating_sentiment_stats": {
+        "1": {
+          "mean": 0.012453906734784444,
+          "std": 0.01111299973628116,
+          "min": 0.007645726203918457,
+          "max": 0.07104715704917908,
+          "count": 30
+        },
+        "2": {
+          "mean": 0.10317683418591818,
+          "std": 0.07409689175473184,
+          "min": 0.02177596092224121,
+          "max": 0.30633941292762756,
+          "count": 60
+        },
+        "3": {
+          "mean": 0.650821044213242,
+          "std": 0.23401633383141482,
+          "min": 0.15152743458747864,
+          "max": 0.9626566469669342,
+          "count": 90
+        },
+        "4": {
+          "mean": 0.9481875957714186,
+          "std": 0.05330155730736338,
+          "min": 0.7193331569433212,
+          "max": 0.9912592768669128,
+          "count": 90
+        },
+        "5": {
+          "mean": 0.9910482257604599,
+          "std": 0.007570046533185612,
+          "min": 0.9577842652797699,
+          "max": 0.9957910478115082,
+          "count": 30
+        }
+      },
+      "interpretation": "EXCELLENT ALIGNMENT"
+    }
+  }
+}

@@ -36,21 +36,23 @@ class OpenAIClient:
         # If default is a list, use the first one
         if isinstance(model_to_use, list):
             model_to_use = model_to_use[0]
+        params = {"model": model_to_use,
+                  "messages": [
+                      {"role": "system", "content": system_prompt},
+                      {"role": "user", "content": user_prompt}
+                  ],
+                  "temperature": temperature,
+                  "top_p": top_p,
+                  "response_format": {
+                      "type": "json_schema",
+                      "schema": response_schema
+                  }
+                  }
+        if not response_schema:
+            params.pop("response_format")
 
         try:
-            response = self.client.chat.completions.create(
-                model=model_to_use,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=temperature,
-                top_p=top_p,
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": response_schema
-                },
-            )
+            response = self.client.chat.completions.create(**params)
 
             return response.choices[0].message.content
 

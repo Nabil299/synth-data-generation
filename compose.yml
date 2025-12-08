@@ -25,17 +25,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: synth_reviews_app
-    environment:
-      - API_KEY=${API_KEY}
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=synthetic_reviews
     env_file: .env
     volumes:
-      - .:/app
-      - model_cache:/root/.cache/huggingface
+      - ./outputs:/app/outputs
+      - ./model_cache:/root/.cache/huggingface
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,8 +40,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  model_cache:
     driver: local
 
 networks:

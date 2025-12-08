@@ -40,11 +40,66 @@ system_prompt: |
   CRITICAL REQUIREMENTS:
   1. Generate EXACTLY {batch_size} reviews (no more, no less)
   2. Output MUST be a JSON object containing a "reviews" array
-  3. Follow the rating distribution specified above precisely
+  3. Follow the rating distribution specified above precisely - this is MANDATORY
   4. Each review must feel authentic and natural, written in the persona's voice
   5. Consider the persona's age, occupation, and background when crafting tone and vocabulary
   6. Use vocabulary patterns from the provided examples
   7. Return ONLY valid JSON, no commentary, explanations, or text outside the JSON
+
+  ## DETAILED RATING GUIDELINES (FOLLOW STRICTLY):
+  
+  ### 1-Star Reviews (Very Negative):
+  - Express strong disappointment or frustration
+  - Mention multiple serious problems or defects
+  - Use words like: "terrible", "waste of money", "disappointed", "broken", "useless"
+  - Clearly state you would NOT recommend the product
+  - Examples: "Complete waste of money", "Broke after one use", "Worst purchase ever"
+  
+  ### 2-Star Reviews (Negative):
+  - Express dissatisfaction with significant issues
+  - Mention specific problems that made the product not worth it
+  - Use words like: "not good", "disappointing", "problems", "issues", "not worth it"
+  - May mention one small positive aspect but overall negative
+  - Examples: "Has some issues that can't be ignored", "Not as described", "Poor quality"
+  
+  ### 3-Star Reviews (NEUTRAL/MIXED - VERY IMPORTANT):
+  **THIS IS THE MOST IMPORTANT RATING TO GET RIGHT**
+  - These reviews are BALANCED with BOTH positive AND negative aspects
+  - Start with what works, then mention what doesn't (or vice versa)
+  - Use transitional words: "however", "but", "although", "on the other hand", "while"
+  - Express that the product is "okay", "decent", "average", "acceptable"
+  - Neither recommend nor discourage - leave it neutral
+  - MUST include at least 2 positives AND 2 negatives
+  - Use phrases like:
+    * "It's okay but..." / "Decent, however..."
+    * "Works fine for basic use but lacks..."
+    * "Good price but quality could be better"
+    * "Some features are great, others not so much"
+    * "Average product, nothing special"
+    * "It works, but I expected more"
+  - Examples:
+    * "The product works as intended, but the build quality feels cheap. Good for the price though."
+    * "Decent features and easy to use, however it's quite noisy and the battery life is disappointing."
+    * "It's okay. Does the job but nothing impressive. Some aspects are good, others could be better."
+  
+  ### 4-Star Reviews (Positive):
+  - Express satisfaction with minor reservations
+  - Mostly positive with one small critique or improvement suggestion
+  - Use words like: "good", "satisfied", "works well", "happy with"
+  - Would recommend despite minor flaws
+  - Examples: "Great product, just wish it had...", "Very good, small issue with..."
+  
+  ### 5-Star Reviews (Excellent):
+  - Express complete satisfaction or excitement
+  - Praise multiple aspects of the product
+  - Use words like: "excellent", "perfect", "amazing", "love it", "highly recommend"
+  - No significant complaints
+  - Examples: "Absolutely perfect!", "Exceeded my expectations", "Best purchase ever"
+
+  ## SPECIAL NOTE FOR 3-STAR REVIEWS:
+  When generating 3-star reviews, you MUST create a balanced perspective. Think of someone who bought the product and found it to be "just okay" - not great, not terrible. They see both good and bad sides. Structure them like:
+  - "[Positive aspect], but [negative aspect]. Overall, [neutral conclusion]."
+  - OR: "[Starts with what's wrong], although [what's acceptable]. It's decent for [specific use case]."
   
   ## Example Reviews for Style Reference:
   
